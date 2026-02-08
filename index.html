@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Lab 4 Tiles Map</title>
+  <title>Lab 4: UW Tile Map</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -12,57 +12,64 @@
     body { margin: 0; padding: 0; }
     #map { position: absolute; top: 0; bottom: 0; width: 100%; }
 
-    #control {
+    #menu {
+      background: #fff;
       position: absolute;
-      top: 12px;
-      right: 12px;
-      z-index: 2;
-      background: rgba(255, 255, 255, 0.98);
-      border: 1px solid rgba(0, 0, 0, 0.25);
-      border-radius: 4px;
+      z-index: 1;
+      top: 10px;
+      right: 10px;
+      border-radius: 3px;
+      width: 210px;
+      border: 1px solid rgba(0, 0, 0, 0.35);
       font-family: Arial, sans-serif;
-      font-size: 13px;
-      padding: 10px 12px;
-      width: 240px;
+      overflow: hidden;
     }
 
-    #control .section-title {
+    #menu .header {
+      padding: 10px;
+      font-size: 13px;
       font-weight: 700;
-      margin: 4px 0 8px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    #menu a {
       font-size: 13px;
+      color: #404040;
+      display: block;
+      margin: 0;
+      padding: 10px;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+      text-align: left;
     }
 
-    #control .divider {
-      margin: 10px 0;
-      border-top: 1px solid rgba(0, 0, 0, 0.15);
+    #menu a:last-child { border: none; }
+
+    #menu a:hover {
+      background-color: #f2f2f2;
+      color: #404040;
     }
 
-    #control label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 0;
-      user-select: none;
-      cursor: pointer;
+    #menu a.active {
+      background-color: #3887be;
+      color: #ffffff;
     }
 
-    #control input[type="radio"],
-    #control input[type="checkbox"] {
-      cursor: pointer;
-    }
+    #menu a.active:hover { background: #3074a4; }
 
     #info {
       position: absolute;
-      left: 12px;
-      bottom: 12px;
-      z-index: 2;
+      left: 10px;
+      bottom: 10px;
+      z-index: 1;
       background: rgba(255, 255, 255, 0.92);
-      border: 1px solid rgba(0, 0, 0, 0.25);
-      border-radius: 4px;
+      padding: 10px;
+      max-width: 360px;
       font-family: Arial, sans-serif;
       font-size: 12px;
-      padding: 10px 12px;
-      max-width: 360px;
+      border-radius: 3px;
+      border: 1px solid rgba(0, 0, 0, 0.2);
     }
 
     #info .title {
@@ -70,158 +77,124 @@
       margin-bottom: 6px;
       font-size: 13px;
     }
+
+    #info .line { margin-top: 4px; }
   </style>
 </head>
 
 <body>
+  <nav id="menu">
+    <div class="header">Layers</div>
+  </nav>
+
   <div id="map"></div>
-
-  <div id="control">
-    <div class="section-title">Basemap</div>
-
-    <label>
-      <input type="radio" name="basemap" value="light" checked>
-      Light
-    </label>
-
-    <label>
-      <input type="radio" name="basemap" value="dark">
-      Dark
-    </label>
-
-    <label>
-      <input type="radio" name="basemap" value="satellite">
-      Satellite
-    </label>
-
-    <div class="divider"></div>
-
-    <div class="section-title">Tile layers</div>
-
-    <label>
-      <input type="checkbox" id="tileset_1">
-      Modified basemap
-    </label>
-
-    <label>
-      <input type="checkbox" id="tileset_2">
-      UW themed layer
-    </label>
-
-    <label>
-      <input type="checkbox" id="tileset_3">
-      Basemap plus UW layer
-    </label>
-
-    <label>
-      <input type="checkbox" id="tileset_4" checked>
-      Theme map
-    </label>
-  </div>
 
   <div id="info">
     <div class="title">Lab 4: Map Design and Tile Generation</div>
-    <div>Use the panel to switch basemaps and turn tilesets on and off.</div>
+    <div class="line">Start view: University of Washington campus.</div>
+    <div class="line">Use the layer menu to turn tiles on and off.</div>
   </div>
 
   <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoibmFsZW11MTMiLCJhIjoiY21sYnFqZ3NsMHQyODNkb29pb3huN29nZyJ9.a_a7oT2hTkhNboBeYWl-lA';
 
-    const basemapStyles = {
-      light: 'mapbox://styles/mapbox/light-v10',
-      dark: 'mapbox://styles/mapbox/dark-v10',
-      satellite: 'mapbox://styles/mapbox/satellite-streets-v11'
-    };
-
-    // UW campus start view
-    const startCenter = [-122.3039, 47.6553];
-    const startZoom = 14.5;
+    const START_CENTER = [-122.3035, 47.6553]; // UW campus (Red Square area)
+    const START_ZOOM = 15;
 
     const map = new mapboxgl.Map({
       container: 'map',
-      style: basemapStyles.light,
-      center: startCenter,
-      zoom: startZoom
+      style: 'mapbox://styles/mapbox/light-v10',
+      center: START_CENTER,
+      zoom: START_ZOOM
     });
 
     map.addControl(new mapboxgl.NavigationControl(), 'top-left');
     map.addControl(new mapboxgl.ScaleControl(), 'bottom-left');
 
-    const tileDefs = [
-      { id: 'tileset_1', path: 'assets/tileset_1/{z}/{x}/{y}.png' },
-      { id: 'tileset_2', path: 'assets/tileset_2/{z}/{x}/{y}.png' },
-      { id: 'tileset_3', path: 'assets/tileset_3/{z}/{x}/{y}.png' },
-      { id: 'tileset_4', path: 'assets/tileset_4/{z}/{x}/{y}.png' }
-    ];
+    map.on('load', () => {
+      const layersConfig = [
+        {
+          id: 'tileset_1',
+          name: 'Basemap',
+          tiles: 'assets/tileset_1/{z}/{x}/{y}.png',
+          defaultVisible: true
+        },
+        {
+          id: 'tileset_2',
+          name: 'Thematic layer',
+          tiles: 'assets/tileset_2/{z}/{x}/{y}.png',
+          defaultVisible: false
+        },
+        {
+          id: 'tileset_3',
+          name: 'Combo',
+          tiles: 'assets/tileset_3/{z}/{x}/{y}.png',
+          defaultVisible: false
+        },
+        {
+          id: 'tileset_4',
+          name: 'UW Themed',
+          tiles: 'assets/tileset_4/{z}/{x}/{y}.png',
+          defaultVisible: false
+        }
+      ];
 
-    function addTilesets() {
-      for (const t of tileDefs) {
-        if (map.getSource(t.id)) continue;
-
-        map.addSource(t.id, {
+      for (const cfg of layersConfig) {
+        map.addSource(cfg.id, {
           type: 'raster',
-          tiles: [t.path],
+          tiles: [cfg.tiles],
           tileSize: 256,
-          attribution: t.id
+          attribution: 'Tiles exported from QGIS'
         });
 
         map.addLayer({
-          id: t.id,
+          id: cfg.id,
           type: 'raster',
-          source: t.id,
-          layout: { visibility: 'none' }
+          source: cfg.id,
+          layout: { visibility: cfg.defaultVisible ? 'visible' : 'none' }
         });
       }
-    }
+    });
 
-    function setLayerVisibility(layerId, on) {
-      if (!map.getLayer(layerId)) return;
-      map.setLayoutProperty(layerId, 'visibility', on ? 'visible' : 'none');
-    }
+    map.on('idle', () => {
+      const layersConfig = [
+        { id: 'tileset_1', name: 'Basemap (Mapbox style)' },
+        { id: 'tileset_2', name: 'Thematic layer (your data)' },
+        { id: 'tileset_3', name: 'Basemap + thematic combo' },
+        { id: 'tileset_4', name: 'Themed Mapbox design' }
+      ];
 
-    function wireLayerCheckboxes() {
-      for (const t of tileDefs) {
-        const el = document.getElementById(t.id);
-        if (!el) continue;
-
-        el.addEventListener('change', () => {
-          setLayerVisibility(t.id, el.checked);
-        });
+      for (const cfg of layersConfig) {
+        if (!map.getLayer(cfg.id)) return;
       }
-    }
 
-    function wireBasemapRadios() {
-      const radios = document.querySelectorAll('input[name="basemap"]');
-      radios.forEach((r) => {
-        r.addEventListener('change', () => {
-          if (!r.checked) return;
+      for (const cfg of layersConfig) {
+        if (document.getElementById(cfg.id)) continue;
 
-          const visible = {};
-          for (const t of tileDefs) {
-            const el = document.getElementById(t.id);
-            visible[t.id] = el ? el.checked : false;
+        const link = document.createElement('a');
+        link.id = cfg.id;
+        link.href = '#';
+        link.textContent = cfg.name;
+
+        const vis = map.getLayoutProperty(cfg.id, 'visibility');
+        link.className = vis === 'visible' ? 'active' : '';
+
+        link.onclick = function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const visibility = map.getLayoutProperty(cfg.id, 'visibility');
+
+          if (visibility === 'visible') {
+            map.setLayoutProperty(cfg.id, 'visibility', 'none');
+            this.className = '';
+          } else {
+            map.setLayoutProperty(cfg.id, 'visibility', 'visible');
+            this.className = 'active';
           }
+        };
 
-          map.setStyle(basemapStyles[r.value]);
-
-          map.once('style.load', () => {
-            addTilesets();
-            for (const t of tileDefs) {
-              setLayerVisibility(t.id, visible[t.id]);
-            }
-          });
-        });
-      });
-    }
-
-    map.on('load', () => {
-      addTilesets();
-      wireLayerCheckboxes();
-      wireBasemapRadios();
-
-      for (const t of tileDefs) {
-        const el = document.getElementById(t.id);
-        if (el && el.checked) setLayerVisibility(t.id, true);
+        document.getElementById('menu').appendChild(link);
       }
     });
   </script>
