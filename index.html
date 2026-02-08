@@ -23,7 +23,7 @@
       font-family: Arial, sans-serif;
       font-size: 13px;
       padding: 10px 12px;
-      width: 220px;
+      width: 240px;
     }
 
     #control .section-title {
@@ -62,7 +62,7 @@
       font-family: Arial, sans-serif;
       font-size: 12px;
       padding: 10px 12px;
-      max-width: 340px;
+      max-width: 360px;
     }
 
     #info .title {
@@ -100,22 +100,22 @@
 
     <label>
       <input type="checkbox" id="tileset_1">
-      tileset_1
+      Modified basemap
     </label>
 
     <label>
       <input type="checkbox" id="tileset_2">
-      tileset_2
+      UW themed layer
     </label>
 
     <label>
       <input type="checkbox" id="tileset_3">
-      tileset_3
+      Basemap plus UW layer
     </label>
 
     <label>
       <input type="checkbox" id="tileset_4" checked>
-      tileset_4
+      Theme map
     </label>
   </div>
 
@@ -133,11 +133,15 @@
       satellite: 'mapbox://styles/mapbox/satellite-streets-v11'
     };
 
+    // UW campus start view
+    const startCenter = [-122.3039, 47.6553];
+    const startZoom = 14.5;
+
     const map = new mapboxgl.Map({
       container: 'map',
       style: basemapStyles.light,
-      center: [-122.2559435, 47.6002614],
-      zoom: 12
+      center: startCenter,
+      zoom: startZoom
     });
 
     map.addControl(new mapboxgl.NavigationControl(), 'top-left');
@@ -167,11 +171,6 @@
           source: t.id,
           layout: { visibility: 'none' }
         });
-      }
-
-      const defaultOn = document.getElementById('tileset_4');
-      if (defaultOn && defaultOn.checked) {
-        map.setLayoutProperty('tileset_4', 'visibility', 'visible');
       }
     }
 
@@ -220,10 +219,9 @@
       wireLayerCheckboxes();
       wireBasemapRadios();
 
-      const checks = ['tileset_1', 'tileset_2', 'tileset_3', 'tileset_4'];
-      for (const id of checks) {
-        const el = document.getElementById(id);
-        if (el && el.checked) setLayerVisibility(id, true);
+      for (const t of tileDefs) {
+        const el = document.getElementById(t.id);
+        if (el && el.checked) setLayerVisibility(t.id, true);
       }
     });
   </script>
